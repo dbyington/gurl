@@ -12,7 +12,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 What things you need to install the software and how to install them
 
-- Go ([installing](https://golang.org/install))
+- Go ([download](https://golang.org/dl))
 
 ### Installing gURL
 
@@ -46,17 +46,17 @@ Give an example
 
 ## Contributing
 
-TODO: Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
+TODO: Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests to us.
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/dbyington/gurl/tags). 
 
 ## Authors
 
 * **Don Byington** - *Initial work* - [dbyington](https://github.com/dbyington)
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+See also the list of [contributors](contributors.md) who participated in this project.
 
 ## License
 
