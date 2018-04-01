@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/jessevdk/go-flags"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
@@ -20,7 +22,7 @@ var (
 	//AWSsecretKey            = "AWS_SECRET_KEY"
 )
 
-var logit = log.New(os.Stderr, "app: ", log.LstdFlags|log.Lshortfile)
+var logit = log.New(os.Stderr, "gurl: ", log.LstdFlags|log.Lshortfile)
 
 type CommandFlags struct {
 	User                  string   `short:"u" long:"user" description:"HTTP Basic Auth username"`
@@ -30,6 +32,7 @@ type CommandFlags struct {
 	Method                string   `short:"M" long:"method" default:"GET" description:"The HTTP(S) method verb"`
 	FollowRedirects       bool     `short:"f" long:"follow" description:"follow 3XX redirects"`
 	FollowSecureRedirects bool     `long:"followSecure" description:"follow 3XX redirects over HTTPS"`
+	Body                  string   `short:"b" long:"body" description:"request body"`
 	Args                  struct {
 		URL  string
 		Rest []string
@@ -68,27 +71,34 @@ func main() {
 
 	method := cmdLineFlags.Method
 
+	var body io.ReadCloser
+	if len(cmdLineFlags.Body) > 0 {
+		logit.Printf("Body: %v", cmdLineFlags.Body)
+		body = ioutil.NopCloser(bytes.NewBuffer([]byte(cmdLineFlags.Body)))
+		method = http.MethodPost
+	}
 	request := &http.Request{
 		Method: method,
 		Header: *headers,
 		URL:    url,
+		Body:   body,
 	}
 
-	client := &http.Client{CheckRedirect: allowClientRedirects}
+	client := &http.Client{CheckRedirect: clientRedirects}
 	response, err := client.Do(request)
 	if err != nil {
 		logit.Printf("Failed to %s; %s: %s\n", method, cmdLineFlags.Args.URL, err.Error())
 		os.Exit(1)
 	}
 
-	body, err := ioutil.ReadAll(response.Body)
+	respBody, err := ioutil.ReadAll(response.Body)
 	response.Body.Close()
 	if err != nil {
-		logit.Printf("Failed to read response body: %s\n", err.Error())
+		logit.Printf("Failed to read response respBody: %s\n", err.Error())
 		os.Exit(1)
 	}
 
-	fmt.Println(string(body))
+	fmt.Println(string(respBody))
 }
 
 func urlFromString(s string) (*url.URL, error) {
@@ -118,9 +128,10 @@ func urlFromString(s string) (*url.URL, error) {
 	return u, nil
 }
 
-var allowClientRedirects = func(req *http.Request, via []*http.Request) error {
+var clientRedirects = func(req *http.Request, via []*http.Request) error {
 	var followSecure bool
 	var follow bool
+
 	if followSecureENV, ok := os.LookupEnv(FollowRedirectSecureEnv); ok {
 		if ok, _ := strconv.ParseBool(followSecureENV); ok {
 			followSecure = true
